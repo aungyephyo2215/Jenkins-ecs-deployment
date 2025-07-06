@@ -40,4 +40,11 @@ pipeline {
         }
 
     }
+    post {
+        always {
+            junit '**/test-results.xml'
+            archiveArtifacts artifacts: 'build/**/*', allowEmptyArchive: true
+            cleanWs()
+        }
+    }
 }
