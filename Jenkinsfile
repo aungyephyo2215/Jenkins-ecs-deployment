@@ -23,5 +23,22 @@ pipeline {
                 '''
             }
         }
+
+        stage('Test') {
+            agent {
+                docker {
+                    image 'node:18-apline'
+                    reuseNode true
+                }
+            }
+            stage {
+                sh '''
+                test -f build/index.html
+                npm test
+                
+                '''
+            }
+        }
+
     }
 }
