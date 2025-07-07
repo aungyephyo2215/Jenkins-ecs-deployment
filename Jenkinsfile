@@ -99,7 +99,6 @@ pipeline {
             sh '''
               apt-get update && apt-get install -y git python3 make g++ jq
               npm install -g netlify-cli@20.1.1
-              npm
               echo "Deploying to Staging Env with site ID: $NETLIFY_SITE_ID"
               netlify --version
               netlify status 
@@ -124,6 +123,8 @@ pipeline {
               def stagingUrl = readFile('staging_url.txt').trim()
               echo "Staging URL: ${stagingUrl}"
               sh """
+                npx serve -s build &
+                sleep 10
                 npx playwright test --reporter=html 
                 echo ${stagingUrl}
               """
