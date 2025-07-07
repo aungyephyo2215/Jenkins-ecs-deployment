@@ -105,8 +105,6 @@ pipeline {
                 sh '''
                     npm install netlify-cli@20.1.1 --unsafe-perm
                     npx netlify --version
-                    # Add deployment command below (adjust as needed)
-                    # npx netlify deploy --dir=build --prod --auth=<token> --site=<site-id>
                 '''
             }
         }
