@@ -97,16 +97,24 @@ pipeline {
             unstash 'node_modules'
             unstash 'build'
             sh '''
+              set -e
               apt-get update && apt-get install -y git python3 make g++ jq
               npm install -g netlify-cli@20.1.1
               echo "Deploying to Staging Env with site ID: $NETLIFY_SITE_ID"
               netlify --version
               netlify status 
               netlify deploy --dir=build --auth=$NETLIFY_AUTH_TOKEN --site=$NETLIFY_SITE_ID --json > deploy-output.json
+              echo "=== Netlify deploy-output.json ==="
+              cat deploy-output.json
               jq -r '.deploy.ssl_url' deploy-output.json > staging_url.txt
+              echo "=== staging_url.txt ==="
+              cat staging_url.txt
             '''
             script {
               def stagingUrl = readFile('staging_url.txt').trim()
+              if (!stagingUrl || stagingUrl == "null") {
+                error "Staging URL could not be extracted! Check Netlify deploy output."
+              }
               echo "Staging URL: ${stagingUrl}"
               sh """
                 npx playwright test --reporter=html --base-url=${stagingUrl}
@@ -127,7 +135,7 @@ pipeline {
               ])
             }
           }
-        } 
+        }   
 
         stage('Manual Approval') {
           steps {
