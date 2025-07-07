@@ -162,8 +162,8 @@ pipeline {
             '''
            /* sh '''
               npx playwright test --reporter=html --base-url=$CI_ENVIRONMENT_URL
-              echo $CI_ENVIRONMENT_URL*/
-            '''
+              echo $CI_ENVIRONMENT_URL
+            '''*/
           }
           post {
             always {
