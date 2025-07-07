@@ -110,6 +110,7 @@ pipeline {
                                 apt-get update && apt-get install -y libvips libvips-dev python3 make g++
                                 npm ci
                                 npm install netlify-cli@20.1.1 --unsafe-perm
+                                node_modules/.bin/netlify status
                                 
                                 
                         '''
