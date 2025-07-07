@@ -103,18 +103,12 @@ pipeline {
                     unstash 'node_modules'
                     unstash 'build'
                     sh '''
-                        mkdir -p /tmp/.npm-cache
-                        chown -R $(id -u):$(id -g) /tmp/.npm-cache
-
-                        npm ci
-
-                        # Fix for sharp native build
-                        npm install netlify-cli@20.1.1 --unsafe-perm
-
-                        
-
-                        # Deploy (make sure env vars are set in Jenkins credentials)
-                        # npx netlify deploy --dir=build --prod --auth=$NETLIFY_AUTH_TOKEN --site=$NETLIFY_SITE_ID
+                            apt-get update && apt-get install -y libvips libvips-dev python3 make g++
+                            mkdir -p /tmp/.npm-cache
+                            chown -R $(id -u):$(id -g) /tmp/.npm-cache
+                            npm ci
+                            npm install netlify-cli@20.1.1 --unsafe-perm
+                            npx netlify --version
                     '''
                 }
             }
