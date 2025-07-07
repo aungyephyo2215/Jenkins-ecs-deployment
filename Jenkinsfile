@@ -105,12 +105,11 @@ pipeline {
               netlify status 
               netlify deploy --dir=build --auth=$NETLIFY_AUTH_TOKEN --site=$NETLIFY_SITE_ID  --json > deploy-output.json
             '''
+            script {
+              env.STAGING_URL = sh(script: "jq -r '.deploy.ssl_url' deploy-output.json", returnStdout: true).trim()
+              echo "Staging URL: ${env.STAGING_URL}"
           }
-          script {
-            env.STAGING_URL = sh(script: "jq -r '.deploy.ssl_url' deploy-output.json", returnStdout: true).trim()
-            echo "Staging URL: ${env.STAGING_URL}"
           }
-
         }
 
         stage('E2E-Staging') {
