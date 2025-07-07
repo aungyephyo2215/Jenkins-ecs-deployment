@@ -36,6 +36,9 @@ pipeline {
                             reuseNode true
                         }
                     }
+                    environment {
+                        NPM_CONFIG_CACHE = '/tmp/.npm-cache'
+                    }
                     steps {
                         unstash 'node_modules'
                         sh '''
@@ -49,7 +52,7 @@ pipeline {
                     }
                 }
 
-                /*stage('E2E') {
+                stage('E2E') {
                     agent {
                         docker {
                             image 'mcr.microsoft.com/playwright:v1.39.0-jammy'
@@ -57,12 +60,11 @@ pipeline {
                         }
                     }
                     environment {
-                    NPM_CONFIG_CACHE = '/tmp/.npm-cache'
+                        NPM_CONFIG_CACHE = '/tmp/.npm-cache'
                     }
                     steps {
                         unstash 'build'
                         sh '''
-                            npm config set cache /tmp/.npm-cache
                             npm install serve
                             npx serve -s build &
                             sleep 10
@@ -71,10 +73,19 @@ pipeline {
                     }
                     post {
                         always {
-                    publishHTML([allowMissing: false, alwaysLinkToLastBuild: false, icon: '', keepAll: false, reportDir: 'playwright-report', reportFiles: 'index.html', reportName: 'playwright-HTML Report', reportTitles: '', useWrapperFileDirectly: true])
+                            publishHTML([
+                                allowMissing: false,
+                                alwaysLinkToLastBuild: false,
+                                icon: '',
+                                keepAll: false,
+                                reportDir: 'playwright-report',
+                                reportFiles: 'index.html',
+                                reportName: 'Playwright HTML Report',
+                                useWrapperFileDirectly: true
+                            ])
                         }
                     }
-                }*/
+                }
             }
         }
 
@@ -84,6 +95,9 @@ pipeline {
                     image 'node:18-alpine'
                     reuseNode true
                 }
+            }
+            environment {
+                NPM_CONFIG_CACHE = '/tmp/.npm-cache'
             }
             steps {
                 unstash 'node_modules'
