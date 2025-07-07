@@ -123,7 +123,7 @@ pipeline {
         unstash 'build'
         sh '''
           npx playwright test --reporter=html 
-          
+          echo $CI_ENVIRONMENT_URL
         '''
       }
       post {
