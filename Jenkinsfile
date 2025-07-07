@@ -98,7 +98,6 @@ pipeline {
             unstash 'build'
             sh '''
               apt-get update && apt-get install -y git python3 make g++
-              npm install netlify-cli@20.1.1 node-jq
               npm install -g netlify-cli@20.1.1
               echo "Deploying to Staging Env with site ID: $NETLIFY_SITE_ID"
               netlify --version
@@ -107,7 +106,7 @@ pipeline {
             '''
           }
           script {
-            env.STAGING_URL = sh(script: "jq -r '.deploy.ssl_url' deploy-output.json", returnStdout: true).trim()
+            env.STAGING_URL = sh(script: "jq -r '.deploy.ssl_url' deploy-output.json", returnStdout: true)
           }
         }
 
@@ -119,7 +118,7 @@ pipeline {
             }
           }
           environment {
-            CI_ENVIRONMENT_URL = ''
+            CI_ENVIRONMENT_URL = '$env.STAGING_URL'
               }
           steps {
             unstash 'build'
