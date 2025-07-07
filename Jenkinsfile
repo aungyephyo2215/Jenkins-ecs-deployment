@@ -103,6 +103,7 @@ pipeline {
                 unstash 'node_modules'
                 unstash 'build'
                 sh '''
+                    apt-get update && apt-get install -y libvips libvips-dev python3 g++ make
                     npm install netlify-cli@20.1.1 --unsafe-perm
                     npx netlify --version
                     # npx netlify deploy --dir=build --prod --auth=$NETLIFY_AUTH_TOKEN --site=$NETLIFY_SITE_ID
