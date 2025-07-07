@@ -3,8 +3,6 @@ pipeline {
 
     environment {
         NPM_CONFIG_CACHE = '/tmp/.npm-cache'
-        NETLIFY_SITE_ID = credentials('netlify-site-id')
-        NETLIFY_AUTH_TOKEN = credentials('netlify-auth-token')
     }
 
     stages {
@@ -111,7 +109,7 @@ pipeline {
                                 npm ci
                                 npm install netlify-cli@20.1.1 --unsafe-perm
                                 node_modules/.bin/netlify status
-                                
+
                                 
                         '''
                     }
