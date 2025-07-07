@@ -92,7 +92,7 @@ pipeline {
         stage('Deploy') {
             agent {
                 docker {
-                    image 'node:18-bullseye'
+                    image 'node:18-bullseye' // ✅ Changed from alpine to bullseye
                     reuseNode true
                 }
             }
@@ -105,6 +105,7 @@ pipeline {
                 sh '''
                     npm install netlify-cli@20.1.1 --unsafe-perm
                     npx netlify --version
+                    # npx netlify deploy --dir=build --prod --auth=$NETLIFY_AUTH_TOKEN --site=$NETLIFY_SITE_ID
                 '''
             }
         }
