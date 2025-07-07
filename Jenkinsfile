@@ -105,6 +105,7 @@ pipeline {
               netlify status 
               netlify deploy --dir=build --auth=$NETLIFY_AUTH_TOKEN --site=$NETLIFY_SITE_ID  --json > deploy-output.json
             '''
+            stash name: 'staging_url', includes: 'staging_url.txt'
           }
         }
 
@@ -123,13 +124,6 @@ pipeline {
                 echo ${stagingUrl}
               """
             }
-          steps {
-            unstash 'build'
-            sh '''
-              npx playwright test --reporter=html 
-              echo $CI_ENVIRONMENT_URL
-            '''
-          }
           post {
             always {
               publishHTML([
