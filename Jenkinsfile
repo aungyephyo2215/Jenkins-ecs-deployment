@@ -6,7 +6,7 @@ pipeline {
     }
 
     stages {
-        stage('Build') {
+        /*stage('Build') {
             agent {
                 docker {
                     image 'node:18-alpine'
@@ -25,7 +25,7 @@ pipeline {
                 stash name: 'build', includes: 'build/**'
                 stash name: 'node_modules', includes: 'node_modules/**'
             }
-        }
+        }*/
 
         stage('Tests') {
             parallel {
