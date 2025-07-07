@@ -84,6 +84,28 @@ pipeline {
         }
       }
     }
+    stage('Deploy Staging') {
+      agent {
+        docker {
+          image 'node:18-bullseye'
+          args '-u root:root' // ✅ Run as root to avoid apt/npm issues
+          reuseNode true
+        }
+      }
+      steps {
+        unstash 'node_modules'
+        unstash 'build'
+        sh '''
+          apt-get update && apt-get install -y git python3 make g++
+          npm install -g netlify-cli@20.1.1
+          echo "Deploying to Staging Env with site ID: $NETLIFY_SITE_ID"
+          netlify --version
+          netlify status 
+          netlify deploy  --dir=build --auth=$NETLIFY_AUTH_TOKEN --site=$NETLIFY_SITE_ID  
+        '''
+      }
+
+
 
     stage('Deploy') {
       agent {
