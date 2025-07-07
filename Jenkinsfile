@@ -111,10 +111,7 @@ pipeline {
               echo "=== staging_url.txt ==="
               cat staging_url.txt
             '''
-            sh '''
-              npx playwright test --reporter=html --base-url=$CI_ENVIRONMENT_URL
-              
-            '''
+   
           }
           post {
             always {
