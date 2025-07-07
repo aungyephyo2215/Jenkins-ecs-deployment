@@ -84,82 +84,83 @@ pipeline {
         }
       }
     }
-    stage('Deploy Staging') {
-      agent {
-        docker {
-          image 'node:18-bullseye'
-          args '-u root:root' // ✅ Run as root to avoid apt/npm issues
-          reuseNode true
-        }
-      }
-      steps {
-        unstash 'node_modules'
-        unstash 'build'
-        sh '''
-          apt-get update && apt-get install -y git python3 make g++
-          npm install -g netlify-cli@20.1.1
-          echo "Deploying to Staging Env with site ID: $NETLIFY_SITE_ID"
-          netlify --version
-          netlify status 
-          netlify deploy --dir=build --auth=$NETLIFY_AUTH_TOKEN --site=$NETLIFY_SITE_ID  
-        '''
-      }
-    }
 
-
-
-    stage('Deploy') {
-      agent {
-        docker {
-          image 'node:18-bullseye'
-          args '-u root:root' // ✅ Run as root to avoid apt/npm issues
-          reuseNode true
-        }
-      }
-      steps {
-        unstash 'node_modules'
-        unstash 'build'
-        sh '''
-          apt-get update && apt-get install -y git python3 make g++
-          npm install -g netlify-cli@20.1.1
-          echo "Deploying to Staging Env with site ID: $NETLIFY_SITE_ID"
-          netlify --version
-          netlify status 
-          netlify deploy --prod --dir=build --auth=$NETLIFY_AUTH_TOKEN --site=$NETLIFY_SITE_ID  
-        '''
-      }
-    }
-    stage('E2E-Prod') {
-      agent {
-        docker {
-          image 'mcr.microsoft.com/playwright:v1.39.0-jammy'
-          reuseNode true
-        }
-      }
-      environment {
-        CI_ENVIRONMENT_URL = 'https://sunny-tartufo-84b220.netlify.app'
+        stage('Deploy Staging') {
+          agent {
+            docker {
+              image 'node:18-bullseye'
+              args '-u root:root' // ✅ Run as root to avoid apt/npm issues
+              reuseNode true
+            }
           }
-      steps {
-        unstash 'build'
-        sh '''
-          npx playwright test --reporter=html 
-          echo $CI_ENVIRONMENT_URL
-        '''
-      }
-      post {
-        always {
-          publishHTML([
-            allowMissing: false,
-            alwaysLinkToLastBuild: false,
-            icon: '',
-            keepAll: false,
-            reportDir: 'playwright-report',
-            reportFiles: 'index.html',
-            reportName: 'Playwright HTML Report (E2E-Prod)',
-            useWrapperFileDirectly: true
-          ])
+          steps {
+            unstash 'node_modules'
+            unstash 'build'
+            sh '''
+              apt-get update && apt-get install -y git python3 make g++
+              npm install -g netlify-cli@20.1.1
+              echo "Deploying to Staging Env with site ID: $NETLIFY_SITE_ID"
+              netlify --version
+              netlify status 
+              netlify deploy --dir=build --auth=$NETLIFY_AUTH_TOKEN --site=$NETLIFY_SITE_ID  
+            '''
+          }
+        }
+
+
+
+        stage('Deploy') {
+          agent {
+            docker {
+              image 'node:18-bullseye'
+              args '-u root:root' // ✅ Run as root to avoid apt/npm issues
+              reuseNode true
+            }
+          }
+          steps {
+            unstash 'node_modules'
+            unstash 'build'
+            sh '''
+              apt-get update && apt-get install -y git python3 make g++
+              npm install -g netlify-cli@20.1.1
+              echo "Deploying to Staging Env with site ID: $NETLIFY_SITE_ID"
+              netlify --version
+              netlify status 
+              netlify deploy --prod --dir=build --auth=$NETLIFY_AUTH_TOKEN --site=$NETLIFY_SITE_ID  
+            '''
+          }
+        }
+        stage('E2E-Prod') {
+          agent {
+            docker {
+              image 'mcr.microsoft.com/playwright:v1.39.0-jammy'
+              reuseNode true
+            }
+          }
+          environment {
+            CI_ENVIRONMENT_URL = 'https://sunny-tartufo-84b220.netlify.app'
+              }
+          steps {
+            unstash 'build'
+            sh '''
+              npx playwright test --reporter=html 
+              echo $CI_ENVIRONMENT_URL
+            '''
+          }
+          post {
+            always {
+              publishHTML([
+                allowMissing: false,
+                alwaysLinkToLastBuild: false,
+                icon: '',
+                keepAll: false,
+                reportDir: 'playwright-report',
+                reportFiles: 'index.html',
+                reportName: 'Playwright HTML Report (E2E-Prod)',
+                useWrapperFileDirectly: true
+              ])
+            }
+          }
         }
       }
     }
-  }
-}
