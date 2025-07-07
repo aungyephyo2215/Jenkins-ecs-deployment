@@ -3,6 +3,8 @@ pipeline {
 
     environment {
         NPM_CONFIG_CACHE = '/tmp/.npm-cache'
+        NETLIFY_SITE_ID = credentials('netlify-site-id')
+        NETLIFY_AUTH_TOKEN = credentials('netlify-auth-token')
     }
 
     stages {
@@ -107,6 +109,7 @@ pipeline {
                                 apt-get update && apt-get install -y libvips libvips-dev python3 make g++
                                 npm ci
                                 npm install netlify-cli@20.1.1 --unsafe-perm
+                                node_modules/.bin/netlify status
                                 
                         '''
                     }
