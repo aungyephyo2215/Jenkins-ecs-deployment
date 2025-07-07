@@ -111,7 +111,7 @@ pipeline {
               cat staging_url.txt
             '''
             sh '''
-              npx playwright test --reporter=html --base-url=$CI_ENVIRONMENT_URL
+              npx playwright test --reporter=html --base-url='https://sunny-tartufo-84b220.netlify.app''
               echo $CI_ENVIRONMENT_URL
             '''
           }
