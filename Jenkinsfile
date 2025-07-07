@@ -5,6 +5,7 @@ pipeline {
     NPM_CONFIG_CACHE = '/tmp/.npm-cache'
     NETLIFY_AUTH_TOKEN = credentials('netlify-auth-token')
     NETLIFY_SITE_ID = credentials('netlify-site-id')
+    CI_ENVIRONMENT_URL = 'https://sunny-tartufo-84b220.netlify.app'
   }
 
   stages {
@@ -111,8 +112,8 @@ pipeline {
               cat staging_url.txt
             '''
             sh '''
-              npx playwright test --reporter=html --base-url='https://sunny-tartufo-84b220.netlify.app''
-              echo $CI_ENVIRONMENT_URL
+              npx playwright test --reporter=html --base-url=$CI_ENVIRONMENT_URL
+              
             '''
           }
           post {
