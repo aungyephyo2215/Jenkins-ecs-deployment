@@ -85,11 +85,11 @@ pipeline {
       }
     }
 
-        stage('Deploy Staging') {
+        stage('Deploy & E2E-Staging') {
           agent {
             docker {
               image 'node:18-bullseye'
-              args '-u root:root' // ✅ Run as root to avoid apt/npm issues
+              args '-u root:root'
               reuseNode true
             }
           }
@@ -102,31 +102,16 @@ pipeline {
               echo "Deploying to Staging Env with site ID: $NETLIFY_SITE_ID"
               netlify --version
               netlify status 
-              netlify deploy --dir=build --auth=$NETLIFY_AUTH_TOKEN --site=$NETLIFY_SITE_ID  --json > deploy-output.json
+              netlify deploy --dir=build --auth=$NETLIFY_AUTH_TOKEN --site=$NETLIFY_SITE_ID --json > deploy-output.json
               jq -r '.deploy.ssl_url' deploy-output.json > staging_url.txt
             '''
-            stash name: 'staging_url', includes: 'staging_url.txt'
-          }
-        }
-
-        stage('E2E-Staging') {
-          agent {
-            docker {
-              image 'mcr.microsoft.com/playwright:v1.39.0-jammy'
-              reuseNode true
-            }
-          }
-          steps {
-            unstash 'build'
-            unstash 'staging_url'
-
             script {
-                  def stagingUrl = readFile('staging_url.txt').trim()
-                  echo "Staging URL: ${stagingUrl}"
-                  sh """
-                    npx playwright test --reporter=html --base-url=${stagingUrl}
-                    echo ${stagingUrl}
-                  """
+              def stagingUrl = readFile('staging_url.txt').trim()
+              echo "Staging URL: ${stagingUrl}"
+              sh """
+                npx playwright test --reporter=html --base-url=${stagingUrl}
+                echo ${stagingUrl}
+              """
             }
           }
           post {
@@ -154,7 +139,7 @@ pipeline {
         }
         
 
-        stage('Deploy') {
+        stage('Deploy prod') {
           agent {
             docker {
               image 'node:18-bullseye'
