@@ -119,15 +119,14 @@ pipeline {
           steps {
             unstash 'build'
             unstash 'staging_url'
+
             script {
-              def stagingUrl = readFile('staging_url.txt').trim()
-              echo "Staging URL: ${stagingUrl}"
-              sh """
-                npx serve -s build &
-                sleep 10
-                npx playwright test --reporter=html 
-                echo ${stagingUrl}
-              """
+                  def stagingUrl = readFile('staging_url.txt').trim()
+                  echo "Staging URL: ${stagingUrl}"
+                  sh """
+                    npx playwright test --reporter=html --base-url=${stagingUrl}
+                    echo ${stagingUrl}
+                  """
             }
           }
           post {
