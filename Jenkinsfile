@@ -93,6 +93,7 @@ pipeline {
                     agent {
                         docker {
                             image 'node:18-bullseye' // ⬅️ Switch to Debian-based image
+                            args '-u root:root'
                             reuseNode true
                         }
                     }
@@ -104,10 +105,6 @@ pipeline {
                         unstash 'build'
                         sh '''
                                 apt-get update && apt-get install -y libvips libvips-dev python3 make g++
-                                npm config set cache /tmp/.npm-cache --global
-                                mkdir -p /tmp/.npm-cache
-                                chmod -R 777 /tmp/.npm-cache
-                                chown -R $(id -u):$(id -g) /tmp/.npm-cache
                                 npm ci
                                 npm install netlify-cli@20.1.1 --unsafe-perm
                                 
