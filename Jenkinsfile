@@ -93,8 +93,8 @@ pipeline {
       }
       environment {
         NPM_CONFIG_CACHE = '/tmp/.npm-cache'
-        /*NETLIFY_AUTH_TOKEN = credentials('NETLIFY_AUTH_TOKEN')
-        /*NETLIFY_SITE_ID = credentials('NETLIFY_SITE_ID')*/
+        NETLIFY_AUTH_TOKEN = credentials('netlify-auth-token')
+        NETLIFY_SITE_ID = credentials('netlify-site-id')
       }
       steps {
         unstash 'node_modules'
