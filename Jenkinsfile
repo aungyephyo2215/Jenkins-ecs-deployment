@@ -103,7 +103,8 @@ pipeline {
           apt-get update && apt-get install -y git python3 make g++
           npm install -g netlify-cli@20.1.1
           echo "Deploying to Netlify with site ID: $NETLIFY_SITE_ID"
-          nodemodules/.bin/netlify status      
+          nodemodules/.bin/netlify status  
+          nodemodules/.bin/netlify deploy --prod --dir=build --auth=$NETLIFY_AUTH_TOKEN --site=$NETLIFY_SITE_ID    
         '''
       }
     }
