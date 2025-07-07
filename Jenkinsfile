@@ -105,10 +105,6 @@ pipeline {
               netlify status 
               netlify deploy --dir=build --auth=$NETLIFY_AUTH_TOKEN --site=$NETLIFY_SITE_ID  --json > deploy-output.json
             '''
-            script {
-              env.STAGING_URL = sh(script: "jq -r '.deploy.ssl_url' deploy-output.json", returnStdout: true).trim()
-              echo "Staging URL: ${env.STAGING_URL}"
-          }
           }
         }
 
@@ -119,9 +115,14 @@ pipeline {
               reuseNode true
             }
           }
-          environment {
-            CI_ENVIRONMENT_URL = '$env.STAGING_URL'
-              }
+          script {
+              def stagingUrl = readFile('staging_url.txt').trim()
+              echo "Staging URL: ${stagingUrl}"
+              sh """
+                npx playwright test --reporter=html 
+                echo ${stagingUrl}
+              """
+            }
           steps {
             unstash 'build'
             sh '''
