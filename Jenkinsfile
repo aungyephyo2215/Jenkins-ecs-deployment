@@ -104,9 +104,14 @@ pipeline {
               netlify --version
               netlify status 
               netlify deploy --dir=build --auth=$NETLIFY_AUTH_TOKEN --site=$NETLIFY_SITE_ID  --json > deploy-output.json
-              jq -r '.deploy.ssl_url' deploy-output.json > staging_url.txt
+              
             '''
           }
+          script {
+            env.STAGING_URL = sh(script: "jq -r '.deploy.ssl_url' deploy-output.json", returnStdout: true).trim()
+            echo "Staging URL: ${env.STAGING_URL}"
+          }
+          stash name: 'staging_url', includes: 'staging_url.txt'
 
         }
 
@@ -134,9 +139,9 @@ pipeline {
                 alwaysLinkToLastBuild: false,
                 icon: '',
                 keepAll: false,
-                reportDir: 'playwright-report',
+                reportDir: 'playwright-report-staginge2e',
                 reportFiles: 'index.html',
-                reportName: 'Playwright HTML Report (E2E-Prod)',
+                reportName: 'Playwright HTML Report (E2E-Staging)',
                 useWrapperFileDirectly: true
               ])
             }
