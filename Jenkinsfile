@@ -116,7 +116,10 @@ pipeline {
               reuseNode true
             }
           }
-          script {
+          steps {
+            unstash 'build'
+            unstash 'staging_url'
+            script {
               def stagingUrl = readFile('staging_url.txt').trim()
               echo "Staging URL: ${stagingUrl}"
               sh """
@@ -124,6 +127,7 @@ pipeline {
                 echo ${stagingUrl}
               """
             }
+          }
           post {
             always {
               publishHTML([
