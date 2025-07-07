@@ -3,6 +3,7 @@ pipeline {
 
     environment {
         NPM_CONFIG_CACHE = '/tmp/.npm-cache'
+       
     }
 
     stages {
@@ -11,7 +12,7 @@ pipeline {
                 docker {
                     image 'node:18-alpine'
                     reuseNode true
-                    args '-u root:root'
+                    #args '-u root:root'
                 }
             }
             steps {
@@ -100,6 +101,8 @@ pipeline {
                     }
                     environment {
                         NPM_CONFIG_CACHE = '/tmp/.npm-cache'
+                        NETLIFY_SITE_ID = credentials('netlify-site-id')
+                        NETLIFY_AUTH_TOKEN = credentials('netlify-auth-token')
                     }
                     steps {
                         unstash 'node_modules'
@@ -109,7 +112,7 @@ pipeline {
                                 npm ci
                                 npm install netlify-cli@20.1.1 --unsafe-perm
                                 node_modules/.bin/netlify status
-
+                                
                                 
                         '''
                     }
