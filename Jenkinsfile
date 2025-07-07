@@ -56,6 +56,9 @@ pipeline {
                             reuseNode true
                         }
                     }
+                    environment {
+                    NPM_CONFIG_CACHE = '/tmp/.npm-cache'
+                    }
                     steps {
                         unstash 'build'
                         sh '''
