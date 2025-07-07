@@ -3,7 +3,6 @@ pipeline {
 
     environment {
         NPM_CONFIG_CACHE = '/tmp/.npm-cache'
-       
     }
 
     stages {
@@ -95,7 +94,6 @@ pipeline {
                     agent {
                         docker {
                             image 'node:18-bullseye' // ⬅️ Switch to Debian-based image
-                            
                             reuseNode true
                         }
                     }
