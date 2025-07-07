@@ -102,7 +102,7 @@ pipeline {
         sh '''
           apt-get update && apt-get install -y git python3 make g++
           npm install -g netlify-cli@20.1.1
-          
+          echo "Deploying to Netlify with site ID: $NETLIFY_SITE_ID"
         '''
       }
     }
