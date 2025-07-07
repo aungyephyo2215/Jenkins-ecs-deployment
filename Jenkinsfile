@@ -109,11 +109,11 @@ pipeline {
 
         stage('Manual Approval') {
           steps {
-            timeout(time: 1, unit: 'Minutes') {
-                input message: 'Please confirm the deployment to production', ok: 'Confirm'
-              }          
+            timeout(time: 1, unit: 'MINUTES') {
+              input message: 'Please confirm the deployment to production', ok: 'Confirm'
             }
           }
+        }
         
 
         stage('Deploy') {
@@ -137,7 +137,7 @@ pipeline {
             '''
           }
         }
-        
+
         stage('E2E-Prod') {
           agent {
             docker {
