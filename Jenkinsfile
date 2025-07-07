@@ -109,10 +109,11 @@ pipeline {
 
         stage('Manual Approval') {
           steps {
-            input message: 'Approve deployment to production?', ok: 'Deploy to Production'
-            input message: 'Please confirm the deployment to production', ok: 'Confirm'
-            script {
-              echo "Deployment approved, proceeding to production deployment."
+            timeout(time: 1, unit: 'Minutes') {
+              
+              input message: 'Please confirm the deployment to production', ok: 'Confirm'
+              }
+            
             }
           }
         }
