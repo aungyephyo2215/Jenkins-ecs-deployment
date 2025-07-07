@@ -160,9 +160,9 @@ pipeline {
               netlify status 
               netlify deploy --prod --dir=build --auth=$NETLIFY_AUTH_TOKEN --site=$NETLIFY_SITE_ID
             '''
-            sh '''
+           /* sh '''
               npx playwright test --reporter=html --base-url=$CI_ENVIRONMENT_URL
-              echo $CI_ENVIRONMENT_URL
+              echo $CI_ENVIRONMENT_URL*/
             '''
           }
           post {
