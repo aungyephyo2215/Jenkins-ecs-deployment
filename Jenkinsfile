@@ -36,7 +36,6 @@ pipeline {
                             reuseNode true
                         }
                     }
-
                     steps {
                         unstash 'node_modules'
                         sh '''
@@ -57,18 +56,16 @@ pipeline {
                             reuseNode true
                         }
                     }
-
                     steps {
                         unstash 'build'
                         sh '''
-                            npm config set cache /tmp/.npm-cache --global
+                            npm config set cache /tmp/.npm-cache
                             npm install serve
                             npx serve -s build &
                             sleep 10
                             npx playwright test --reporter=html
                         '''
                     }
-
                     post {
                         always {
                             publishHTML([
@@ -93,7 +90,6 @@ pipeline {
                     reuseNode true
                 }
             }
-
             steps {
                 unstash 'node_modules'
                 unstash 'build'
