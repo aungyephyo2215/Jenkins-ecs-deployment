@@ -111,7 +111,7 @@ pipeline {
                         # Fix for sharp native build
                         npm install netlify-cli@20.1.1 --unsafe-perm
 
-                        npx netlify --version
+                        
 
                         # Deploy (make sure env vars are set in Jenkins credentials)
                         # npx netlify deploy --dir=build --prod --auth=$NETLIFY_AUTH_TOKEN --site=$NETLIFY_SITE_ID
