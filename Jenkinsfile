@@ -110,7 +110,6 @@ pipeline {
               echo "Staging URL: ${stagingUrl}"
               sh """
                 npx playwright test --reporter=html --base-url=${stagingUrl}
-                echo ${stagingUrl}
               """
             }
           }
@@ -128,7 +127,7 @@ pipeline {
               ])
             }
           }
-        }       
+        } 
 
         stage('Manual Approval') {
           steps {
@@ -139,13 +138,16 @@ pipeline {
         }
         
 
-        stage('Deploy prod') {
+        stage('Deploy & E2E-Prod') {
           agent {
             docker {
               image 'node:18-bullseye'
-              args '-u root:root' // ✅ Run as root to avoid apt/npm issues
+              args '-u root:root'
               reuseNode true
             }
+          }
+          environment {
+            CI_ENVIRONMENT_URL = 'https://sunny-tartufo-84b220.netlify.app'
           }
           steps {
             unstash 'node_modules'
@@ -153,28 +155,13 @@ pipeline {
             sh '''
               apt-get update && apt-get install -y git python3 make g++
               npm install -g netlify-cli@20.1.1
-              echo "Deploying to Staging Env with site ID: $NETLIFY_SITE_ID"
+              echo "Deploying to Production Env with site ID: $NETLIFY_SITE_ID"
               netlify --version
               netlify status 
-              netlify deploy --prod --dir=build --auth=$NETLIFY_AUTH_TOKEN --site=$NETLIFY_SITE_ID  
+              netlify deploy --prod --dir=build --auth=$NETLIFY_AUTH_TOKEN --site=$NETLIFY_SITE_ID
             '''
-          }
-        }
-
-        stage('E2E-Prod') {
-          agent {
-            docker {
-              image 'mcr.microsoft.com/playwright:v1.39.0-jammy'
-              reuseNode true
-            }
-          }
-          environment {
-            CI_ENVIRONMENT_URL = 'https://sunny-tartufo-84b220.netlify.app'
-              }
-          steps {
-            unstash 'build'
             sh '''
-              npx playwright test --reporter=html 
+              npx playwright test --reporter=html --base-url=$CI_ENVIRONMENT_URL
               echo $CI_ENVIRONMENT_URL
             '''
           }
