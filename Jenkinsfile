@@ -117,12 +117,13 @@ pipeline {
         }
       }
       environment {
-        CI_ENVIRONMENT_URL = https://sunny-tartufo-84b220.netlify.app'
+        CI_ENVIRONMENT_URL = 'https://sunny-tartufo-84b220.netlify.app'
           }
       steps {
         unstash 'build'
         sh '''
-          npx playwright test --reporter=html
+          npx playwright test --reporter=html 
+          echo $CI_ENVIRONMENT_URL
         '''
       }
       post {
