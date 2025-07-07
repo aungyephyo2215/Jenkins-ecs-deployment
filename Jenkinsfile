@@ -104,6 +104,7 @@ pipeline {
           netlify deploy --dir=build --auth=$NETLIFY_AUTH_TOKEN --site=$NETLIFY_SITE_ID  
         '''
       }
+    }
 
 
 
