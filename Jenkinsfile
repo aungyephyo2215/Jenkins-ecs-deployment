@@ -101,7 +101,7 @@ pipeline {
           echo "Deploying to Staging Env with site ID: $NETLIFY_SITE_ID"
           netlify --version
           netlify status 
-          netlify deploy  --dir=build --auth=$NETLIFY_AUTH_TOKEN --site=$NETLIFY_SITE_ID  
+          netlify deploy --dir=build --auth=$NETLIFY_AUTH_TOKEN --site=$NETLIFY_SITE_ID  
         '''
       }
 
