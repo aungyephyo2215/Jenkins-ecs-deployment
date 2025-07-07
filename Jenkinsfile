@@ -110,16 +110,10 @@ pipeline {
               echo "=== staging_url.txt ==="
               cat staging_url.txt
             '''
-            script {
-              def stagingUrl = readFile('staging_url.txt').trim()
-              if (!stagingUrl || stagingUrl == "null") {
-                error "Staging URL could not be extracted! Check Netlify deploy output."
-              }
-              echo "Staging URL: ${stagingUrl}"
-              sh """
-                npx playwright test --reporter=html --base-url=${stagingUrl}
-              """
-            }
+            sh '''
+              npx playwright test --reporter=html --base-url=$CI_ENVIRONMENT_URL
+              echo $CI_ENVIRONMENT_URL
+            '''
           }
           post {
             always {
