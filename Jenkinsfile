@@ -95,7 +95,7 @@ pipeline {
                     agent {
                         docker {
                             image 'node:18-bullseye' // ⬅️ Switch to Debian-based image
-                            args '-u root:root'
+                            
                             reuseNode true
                         }
                     }
