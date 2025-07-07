@@ -99,7 +99,7 @@ pipeline {
             sh '''
               apt-get update && apt-get install -y git python3 make g++
               npm install -g netlify-cli@20.1.1
-              
+              npm install -g jq
               echo "Deploying to Staging Env with site ID: $NETLIFY_SITE_ID"
               netlify --version
               netlify status 
