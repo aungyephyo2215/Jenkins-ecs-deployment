@@ -41,7 +41,7 @@ pipeline {
           }
           steps {
             unstash 'node_modules'
-            sh 'npm test || true' // Prevent pipeline failure from test errors
+            sh 'npm test || true'
           }
           post {
             always {
@@ -113,17 +113,6 @@ pipeline {
         }
       }
     }
-
-    // Optional: Uncomment for manual promotion to production
-    /*
-    stage('Manual Approval') {
-      steps {
-        timeout(time: 15, unit: 'MINUTES') {
-          input message: 'Deploy to Production?', ok: 'Yes, deploy'
-        }
-      }
-    }
-    */
 
     stage('Deploy to Production') {
       agent {
