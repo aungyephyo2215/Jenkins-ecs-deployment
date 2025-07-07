@@ -15,8 +15,6 @@ pipeline {
             }
             steps {
                 sh '''
-                    mkdir -p $NPM_CONFIG_CACHE
-                    chown -R $(id -u):$(id -g) $NPM_CONFIG_CACHE
                     ls -la
                     node --version
                     npm --version
@@ -38,11 +36,12 @@ pipeline {
                             reuseNode true
                         }
                     }
+                    environment {
+                        NPM_CONFIG_CACHE = '/tmp/.npm-cache'
+                    }
                     steps {
                         unstash 'node_modules'
                         sh '''
-                            mkdir -p $NPM_CONFIG_CACHE
-                            chown -R $(id -u):$(id -g) $NPM_CONFIG_CACHE
                             npm test
                         '''
                     }
@@ -60,11 +59,12 @@ pipeline {
                             reuseNode true
                         }
                     }
+                    environment {
+                        NPM_CONFIG_CACHE = '/tmp/.npm-cache'
+                    }
                     steps {
                         unstash 'build'
                         sh '''
-                            mkdir -p $NPM_CONFIG_CACHE
-                            chown -R $(id -u):$(id -g) $NPM_CONFIG_CACHE
                             npm install serve
                             npx serve -s build &
                             sleep 10
@@ -89,30 +89,29 @@ pipeline {
             }
         }
 
-        stage('Deploy') {
-            agent {
-                docker {
-                    image 'node:18-bullseye'
-                    reuseNode true
+            /*stage('Deploy') {
+                agent {
+                    docker {
+                        image 'node:18-bullseye' // ⬅️ Switch to Debian-based image
+                        reuseNode true
+                    }
                 }
-            }
-            environment {
-                NPM_CONFIG_CACHE = '/tmp/.npm-cache'
-                NETLIFY_AUTH_TOKEN = credentials('netlify-auth-token')
-                NETLIFY_SITE_ID = credentials('netlify-site-id')
-            }
-            steps {
-                unstash 'node_modules'
-                unstash 'build'
-                sh '''
-                    apt-get update && apt-get install -y libvips libvips-dev python3 make g++
-                    mkdir -p $NPM_CONFIG_CACHE
-                    chown -R $(id -u):$(id -g) $NPM_CONFIG_CACHE
+                environment {
+                    NPM_CONFIG_CACHE = '/tmp/.npm-cache'
+                }
+                steps {
+                    unstash 'node_modules'
+                    unstash 'build'
+                    sh '''
+                            apt-get update && apt-get install -y libvips libvips-dev python3 make g++
+                            mkdir -p /tmp/.npm-cache
+                            chown -R $(id -u):$(id -g) /tmp/.npm-cache
+                            npm ci
+                            npm install netlify-cli@20.1.1 --unsafe-perm
+                            npx netlify --version
+                    '''
+                }
+            }*/
 
-                    npm install netlify-cli@20.1.1 --unsafe-perm
-                    #npx netlify deploy --dir=build --prod --auth=$NETLIFY_AUTH_TOKEN --site=$NETLIFY_SITE_ID
-                '''
-            }
-        }
     }
 }
