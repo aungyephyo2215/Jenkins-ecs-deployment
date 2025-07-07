@@ -3,6 +3,8 @@ pipeline {
 
   environment {
     NPM_CONFIG_CACHE = '/tmp/.npm-cache'
+    NETLIFY_AUTH_TOKEN = credentials('netlify-auth-token')
+    NETLIFY_SITE_ID = credentials('netlify-site-id')
   }
 
   stages {
@@ -91,18 +93,13 @@ pipeline {
           reuseNode true
         }
       }
-      environment {
-        NPM_CONFIG_CACHE = '/tmp/.npm-cache'
-        NETLIFY_AUTH_TOKEN = credentials('netlify-auth-token')
-        NETLIFY_SITE_ID = credentials('netlify-site-id')
-      }
       steps {
         unstash 'node_modules'
         unstash 'build'
         sh '''
           apt-get update && apt-get install -y git python3 make g++
           npm install -g netlify-cli@20.1.1
-          echo "Deploying to Netlify with site ID: $NETLIFY_SITE_ID"
+          echo "Deploying to Staging Env with site ID: $NETLIFY_SITE_ID"
           netlify --version
           netlify status 
           netlify deploy --prod --dir=build --auth=$NETLIFY_AUTH_TOKEN --site=$NETLIFY_SITE_ID  
