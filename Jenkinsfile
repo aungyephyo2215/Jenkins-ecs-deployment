@@ -108,7 +108,7 @@ pipeline {
                             chown -R $(id -u):$(id -g) /tmp/.npm-cache
                             npm ci
                             npm install netlify-cli@20.1.1 --unsafe-perm
-                            npx netlify --version
+                            
                     '''
                 }
             }*/
