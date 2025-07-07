@@ -6,7 +6,7 @@ pipeline {
     }
 
     stages {
-        /*stage('Build') {
+        stage('Build') {
             agent {
                 docker {
                     image 'node:18-alpine'
@@ -25,7 +25,7 @@ pipeline {
                 stash name: 'build', includes: 'build/**'
                 stash name: 'node_modules', includes: 'node_modules/**'
             }
-        }*/
+        }
 
         stage('Tests') {
             parallel {
@@ -49,7 +49,7 @@ pipeline {
                     }
                 }
 
-                stage('E2E') {
+                /*stage('E2E') {
                     agent {
                         docker {
                             image 'mcr.microsoft.com/playwright:v1.39.0-jammy'
@@ -74,7 +74,7 @@ pipeline {
                     publishHTML([allowMissing: false, alwaysLinkToLastBuild: false, icon: '', keepAll: false, reportDir: 'playwright-report', reportFiles: 'index.html', reportName: 'playwright-HTML Report', reportTitles: '', useWrapperFileDirectly: true])
                         }
                     }
-                }
+                }*/
             }
         }
 
