@@ -104,6 +104,7 @@ pipeline {
               netlify --version
               netlify status 
               netlify deploy --dir=build --auth=$NETLIFY_AUTH_TOKEN --site=$NETLIFY_SITE_ID  --json > deploy-output.json
+              jq -r '.deploy.ssl_url' deploy-output.json > staging_url.txt
             '''
             stash name: 'staging_url', includes: 'staging_url.txt'
           }
