@@ -1,17 +1,17 @@
 pipeline {
     agent any
 
-    stages {
+    environment {
+        NPM_CONFIG_CACHE = '/tmp/.npm-cache'
+    }
 
+    stages {
         stage('Build') {
             agent {
                 docker {
                     image 'node:18-alpine'
                     reuseNode true
                 }
-            }
-             environment {
-                NPM_CONFIG_CACHE = '/tmp/.npm-cache'
             }
             steps {
                 sh '''
@@ -22,6 +22,8 @@ pipeline {
                     npm run build
                     ls -la
                 '''
+                stash name: 'build', includes: 'build/**'
+                stash name: 'node_modules', includes: 'node_modules/**'
             }
         }
 
@@ -36,8 +38,8 @@ pipeline {
                     }
 
                     steps {
+                        unstash 'node_modules'
                         sh '''
-                            #test -f build/index.html
                             npm test
                         '''
                     }
@@ -57,17 +59,27 @@ pipeline {
                     }
 
                     steps {
+                        unstash 'build'
                         sh '''
-                            npm install server
-                            node_modules/.bin/server -s build &
+                            npm config set cache /tmp/.npm-cache --global
+                            npm install serve
+                            npx serve -s build &
                             sleep 10
-                            npx playwright test  --reporter=html
+                            npx playwright test --reporter=html
                         '''
                     }
 
                     post {
                         always {
-                            publishHTML([allowMissing: false, alwaysLinkToLastBuild: false, keepAll: false, reportDir: 'playwright-report', reportFiles: 'index.html', reportName: 'Playwright HTML Report', reportTitles: '', useWrapperFileDirectly: true])
+                            publishHTML([
+                                allowMissing: false,
+                                alwaysLinkToLastBuild: false,
+                                keepAll: false,
+                                reportDir: 'playwright-report',
+                                reportFiles: 'index.html',
+                                reportName: 'Playwright HTML Report',
+                                useWrapperFileDirectly: true
+                            ])
                         }
                     }
                 }
@@ -81,10 +93,15 @@ pipeline {
                     reuseNode true
                 }
             }
+
             steps {
+                unstash 'node_modules'
+                unstash 'build'
                 sh '''
                     npm install netlify-cli
-                    node_modules/.bin/netlify --version
+                    npx netlify --version
+                    # Add deployment command below (adjust as needed)
+                    # npx netlify deploy --dir=build --prod --auth=<token> --site=<site-id>
                 '''
             }
         }
