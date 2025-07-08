@@ -70,7 +70,6 @@ pipeline {
           steps {
             unstash 'build'
             sh '''
-              npm install serve
               npx serve -s build -l 5000 > /dev/null 2>&1 &
               SERVER_PID=$!
               sleep 10
