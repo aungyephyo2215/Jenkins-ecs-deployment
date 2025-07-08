@@ -161,7 +161,7 @@ pipeline {
                 }
             }
             environment {
-                CI_ENVIRONMENT_URL = 'https://your-netlify-prod-url.netlify.app'
+                CI_ENVIRONMENT_URL = 'https://sunny-tartufo-84b220.netlify.app/
             }
             steps {
                 unstash 'build'
