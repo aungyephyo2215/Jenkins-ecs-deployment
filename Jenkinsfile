@@ -35,11 +35,11 @@ pipeline {
           archiveArtifacts artifacts: "${LOG_FILE}", fingerprint: true
         }
       }  
-    }
-    post {
-      always {
-        cleanWs() // ✅ Clean entire workspace after the pipeline completes
-        } 
-      }  
+    }  
   }
+  post {
+    always {
+      cleanWs() // ✅ Clean entire workspace after the pipeline completes
+      } 
+    }  
 }
