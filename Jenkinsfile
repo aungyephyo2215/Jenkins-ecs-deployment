@@ -24,7 +24,7 @@ pipeline {
         usernameVariable: 'AWS_ACCESS_KEY_ID')]) {
         sh '''
         aws --version
-        aws s3 ls'''
+        aws s3 ls > s3list.txt''' 
         }
       }
     }
