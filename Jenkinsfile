@@ -31,7 +31,7 @@ pipeline {
               aws --version >> \$LOG_FILE 2>&1
 
               echo '\\n=== Register ECS Task Definition ===' >> \$LOG_FILE 2>&1
-              LATEST_TD_REVISION=$(aws ecs register-task-definition --cli-input-json file://aws/task-definition-prod.json | jq -r '.taskDefinition.revision')
+              LATEST_TD_REVISION=\$(aws ecs register-task-definition --cli-input-json file://aws/task-definition-prod.json | jq -r '.taskDefinition.revision')
               echo \$LATEST_TD_REVISION >> \$LOG_FILE 2>&1
 
               echo '\\n=== Register ECS Services Deployment ===' >> \$LOG_FILE 2>&1
