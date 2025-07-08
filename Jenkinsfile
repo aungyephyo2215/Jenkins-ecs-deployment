@@ -107,7 +107,7 @@ pipeline {
           }
         }
 
-       /* stage('Manual Approval') {
+       /*/ stage('Manual Approval') {
           steps {
             timeout(time: 15, unit: 'MINUTES') {
               input message: 'Please confirm the deployment to production', ok: 'Confirm'
