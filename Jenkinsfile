@@ -26,11 +26,13 @@ pipeline {
         ]) {
           script {
             sh """
+              yum install jq -y
               echo '=== AWS CLI Version ===' > \$LOG_FILE 2>&1
               aws --version >> \$LOG_FILE 2>&1
               echo '\\n=== Register ECS Task Definition ===' >> \$LOG_FILE 2>&1
-              #aws ecs register-task-definition --cli-input-json file://aws/task-definition-prod.json >> \$LOG_FILE 2>&1
-              aws ecs update-service --cluster Jenkins-lab-wordy-hippopotamus-pwnh7o --service Jenkins-learn-app-service-gc86u70w --task-definition Jenkins-learn-app:5 >> \$LOG_FILE 2>&1
+              $LATEST_TD_REVISION = aws ecs register-task-definition --cli-input-json file://aws/task-definition-prod.json | jq '.taskDefinition.revison' >> \$LOG_FILE 2>&1
+              echo $LATEST_TD_REVISION
+              aws ecs update-service --cluster Jenkins-lab-wordy-hippopotamus-pwnh7o --service Jenkins-learn-app-service-gc86u70w --task-definition Jenkins-learn-app:$LATEST_TD_REVISION >> \$LOG_FILE 2>&1
 
             """
           }
