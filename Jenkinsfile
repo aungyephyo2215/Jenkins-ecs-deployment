@@ -5,9 +5,11 @@ pipeline {
     NPM_CONFIG_CACHE = '/tmp/.npm-cache'
     NETLIFY_AUTH_TOKEN = credentials('netlify-auth-token')
     NETLIFY_SITE_ID = credentials('netlify-site-id')
+    CI_ENVIRONMENT_URL = 'https://sunny-tartufo-84b220.netlify.app'
   }
 
   stages {
+
     stage('Build') {
       agent {
         docker {
@@ -54,17 +56,18 @@ pipeline {
         stage('E2E') {
           agent {
             docker {
-              image 'mcr.microsoft.com/playwright:v1.39.0-jammy'
+              image 'my-playwright-image'
               reuseNode true
             }
           }
           steps {
             unstash 'build'
             sh '''
-              npm install serve
-              npx serve -s build &
+              npx serve -s build -l 5000 > /dev/null 2>&1 &
+              SERVER_PID=$!
               sleep 10
               npx playwright test --reporter=html
+              kill $SERVER_PID
             '''
           }
           post {
@@ -85,11 +88,11 @@ pipeline {
       }
     }
 
-        stage('Deploy Staging') {
+        stage('Deploy & E2E-Staging') {
           agent {
             docker {
               image 'node:18-bullseye'
-              args '-u root:root' // ✅ Run as root to avoid apt/npm issues
+              args '-u root:root'
               reuseNode true
             }
           }
@@ -97,63 +100,73 @@ pipeline {
             unstash 'node_modules'
             unstash 'build'
             sh '''
-              apt-get update && apt-get install -y git python3 make g++
+              set -e
+              apt-get update && apt-get install -y git python3 make g++ jq
               npm install -g netlify-cli@20.1.1
               echo "Deploying to Staging Env with site ID: $NETLIFY_SITE_ID"
               netlify --version
               netlify status 
-              netlify deploy --dir=build --auth=$NETLIFY_AUTH_TOKEN --site=$NETLIFY_SITE_ID  
+              netlify deploy --dir=build --auth=$NETLIFY_AUTH_TOKEN --site=$NETLIFY_SITE_ID --json > deploy-output.json
+              echo "=== Netlify deploy-output.json ==="
+              cat deploy-output.json
+              jq -r '.deploy.ssl_url' deploy-output.json > staging_url.txt
+              echo "=== staging_url.txt ==="
+              cat staging_url.txt
             '''
+            /*script {
+                def stagingUrl = readFile('staging_url.txt').trim()
+                if (!stagingUrl || stagingUrl == "null") {
+                  error "Staging URL could not be extracted! Check Netlify deploy output."
+                }
+                echo "Staging URL: ${stagingUrl}"
+                sh """
+                  npx playwright test --reporter=html --base-url=${stagingUrl}
+                """
+              }*/
+   
           }
-        }
-
-        stage('Manual Approval') {
-          steps {
-            timeout(time: 15, unit: 'MINUTES') {
-              input message: 'Please confirm the deployment to production', ok: 'Confirm'
+          post {
+            always {
+              publishHTML([
+                allowMissing: false,
+                alwaysLinkToLastBuild: false,
+                icon: '',
+                keepAll: false,
+                reportDir: 'playwright-report-staginge2e',
+                reportFiles: 'index.html',
+                reportName: 'Playwright HTML Report (E2E-Staging)',
+                useWrapperFileDirectly: true
+              ])
             }
           }
-        }
-        
-
-        stage('Deploy') {
+        }   
+      
+        stage('Deploy & E2E-Prod') {
           agent {
             docker {
               image 'node:18-bullseye'
-              args '-u root:root' // ✅ Run as root to avoid apt/npm issues
-              reuseNode true
-            }
-          }
-          steps {
-            unstash 'node_modules'
-            unstash 'build'
-            sh '''
-              apt-get update && apt-get install -y git python3 make g++
-              npm install -g netlify-cli@20.1.1
-              echo "Deploying to Staging Env with site ID: $NETLIFY_SITE_ID"
-              netlify --version
-              netlify status 
-              netlify deploy --prod --dir=build --auth=$NETLIFY_AUTH_TOKEN --site=$NETLIFY_SITE_ID  
-            '''
-          }
-        }
-
-        stage('E2E-Prod') {
-          agent {
-            docker {
-              image 'mcr.microsoft.com/playwright:v1.39.0-jammy'
+              args '-u root:root'
               reuseNode true
             }
           }
           environment {
             CI_ENVIRONMENT_URL = 'https://sunny-tartufo-84b220.netlify.app'
-              }
+          }
           steps {
+            unstash 'node_modules'
             unstash 'build'
             sh '''
-              npx playwright test --reporter=html 
-              echo $CI_ENVIRONMENT_URL
+              apt-get update && apt-get install -y git python3 make g++
+              npm install -g netlify-cli@20.1.1
+              echo "Deploying to Production Env with site ID: $NETLIFY_SITE_ID"
+              netlify --version
+              netlify status 
+              netlify deploy --prod --dir=build --auth=$NETLIFY_AUTH_TOKEN --site=$NETLIFY_SITE_ID
             '''
+            /*sh """
+              npx playwright test --reporter=html --base-url=$CI_ENVIRONMENT_URL
+            """*/
+
           }
           post {
             always {
