@@ -27,6 +27,7 @@ pipeline {
         aws --version >> \$LOG_FILE 2>&1
         aws ecs register-task-definition --cli-input-json file://aws/task-definition-prod.json
 
+
         ''' 
         }
       }
