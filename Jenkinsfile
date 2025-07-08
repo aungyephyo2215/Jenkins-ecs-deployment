@@ -26,7 +26,7 @@ pipeline {
         sh '''
         aws --version >> \$LOG_FILE 2>&1
         aws s3 ls >> \$LOG_FILE 2>&1
-        aws ecs regiter-task-definition --cli-input-json aws/task-definition-prod.json 
+        aws ecs regiter-task-definition --cli-input-json file://aws/task-definition-prod.json 
         ''' 
         }
       }
