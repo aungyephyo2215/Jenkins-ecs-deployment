@@ -146,7 +146,7 @@ pipeline {
         stage('Deploy & E2E-Prod') {
           agent {
             docker {
-              image 'my'
+              image 'my-playwright-image'
               args '-u root:root'
               reuseNode true
             }
