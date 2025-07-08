@@ -19,23 +19,12 @@ pipeline {
         }
       }
       steps {
-        withCredentials([usernamePassword(credentialsId: 'my-aws', passwordVariable: 'AWS_ACCESS_KEY_ID', usernameVariable: 'AWS_SECRET_ACCESS_KEY')]) {
+        withCredentials([usernamePassword(credentialsId: 'my-aws',
+         passwordVariable: 'AWS_ACCESS_KEY_ID',
+         usernameVariable: 'AWS_SECRET_ACCESS_KEY')]) {
           sh 'aws --version'
+          sh 'aws s3 ls'
       }
-        
-      }
-    }
-
-    stage('List S3 Buckets') {
-      agent {
-        docker {
-          image 'amazon/aws-cli'
-          args '-u root:root'
-          reuseNode true
-        }
-      }
-      steps {
-        sh 'aws s3 ls'
       }
     }
   }
