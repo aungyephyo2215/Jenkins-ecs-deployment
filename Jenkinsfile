@@ -112,6 +112,8 @@ pipeline {
               jq -r '.deploy.ssl_url' deploy-output.json > staging_url.txt
               echo "=== staging_url.txt ==="
               cat staging_url.txt
+              npx playwright test --reporter=html 
+              echo $CI_ENVIRONMENT_URL
             '''
             /*script {
                 def stagingUrl = readFile('staging_url.txt').trim()
@@ -162,6 +164,8 @@ pipeline {
               netlify --version
               netlify status 
               netlify deploy --prod --dir=build --auth=$NETLIFY_AUTH_TOKEN --site=$NETLIFY_SITE_ID
+              npx playwright test --reporter=html 
+              echo $CI_ENVIRONMENT_URL
             '''
             /*sh """
               npx playwright test --reporter=html --base-url=$CI_ENVIRONMENT_URL
