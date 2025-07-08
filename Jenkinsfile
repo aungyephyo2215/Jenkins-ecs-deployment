@@ -36,7 +36,7 @@ pipeline {
         stage('Unit tests') {
           agent {
             docker {
-              image 'node:18-alpine'
+              image 'my-playwright-image'
               reuseNode true
             }
           }
@@ -91,7 +91,7 @@ pipeline {
         stage('Deploy & E2E-Staging') {
           agent {
             docker {
-              image 'node:18-bullseye'
+              image 'my-playwright-image'
               args '-u root:root'
               reuseNode true
             }
@@ -112,6 +112,8 @@ pipeline {
               jq -r '.deploy.ssl_url' deploy-output.json > staging_url.txt
               echo "=== staging_url.txt ==="
               cat staging_url.txt
+              npx playwright test --reporter=html 
+              echo $CI_ENVIRONMENT_URL
             '''
             /*script {
                 def stagingUrl = readFile('staging_url.txt').trim()
@@ -132,9 +134,9 @@ pipeline {
                 alwaysLinkToLastBuild: false,
                 icon: '',
                 keepAll: false,
-                reportDir: 'playwright-report-staginge2e',
+                reportDir: 'playwright-report-Deploy & E2E-Staging',
                 reportFiles: 'index.html',
-                reportName: 'Playwright HTML Report (E2E-Staging)',
+                reportName: 'Playwright HTML Report (Deploy & E2E-Staging)',
                 useWrapperFileDirectly: true
               ])
             }
@@ -144,28 +146,26 @@ pipeline {
         stage('Deploy & E2E-Prod') {
           agent {
             docker {
-              image 'node:18-bullseye'
+              image 'my'
               args '-u root:root'
               reuseNode true
             }
           }
-          environment {
-            CI_ENVIRONMENT_URL = 'https://sunny-tartufo-84b220.netlify.app'
-          }
+
           steps {
             unstash 'node_modules'
             unstash 'build'
             sh '''
-              apt-get update && apt-get install -y git python3 make g++
+              apt-get update && apt-get install -y git python3 make g++ jr
               npm install -g netlify-cli@20.1.1
               echo "Deploying to Production Env with site ID: $NETLIFY_SITE_ID"
               netlify --version
               netlify status 
               netlify deploy --prod --dir=build --auth=$NETLIFY_AUTH_TOKEN --site=$NETLIFY_SITE_ID
-            '''
-            /*sh """
+              npx playwright test --reporter=html 
+              echo $CI_ENVIRONMENT_URL
               npx playwright test --reporter=html --base-url=$CI_ENVIRONMENT_URL
-            """*/
+            '''
 
           }
           post {
@@ -175,9 +175,9 @@ pipeline {
                 alwaysLinkToLastBuild: false,
                 icon: '',
                 keepAll: false,
-                reportDir: 'playwright-report',
+                reportDir: 'playwright-report-Deploy & E2E-Prod',
                 reportFiles: 'index.html',
-                reportName: 'Playwright HTML Report (E2E-Prod)',
+                reportName: 'Playwright HTML Report (Deploy & E2E-Prod)',
                 useWrapperFileDirectly: true
               ])
             }
