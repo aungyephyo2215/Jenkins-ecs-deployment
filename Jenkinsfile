@@ -114,6 +114,7 @@ pipeline {
           publishHTML([
             allowMissing: true,
             alwaysLinkToLastBuild: true,
+            keepAll: true,
             reportDir: 'playwright-report-staging',
             reportFiles: 'index.html',
             reportName: 'Playwright HTML Report (Deploy & E2E-Staging)'
@@ -148,6 +149,7 @@ pipeline {
           publishHTML([
             allowMissing: true,
             alwaysLinkToLastBuild: true,
+            keepAll: true,
             reportDir: 'playwright-report-prod',
             reportFiles: 'index.html',
             reportName: 'Playwright HTML Report (Deploy & E2E-Prod)'
