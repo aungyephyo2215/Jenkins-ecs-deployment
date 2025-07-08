@@ -146,7 +146,7 @@ pipeline {
         stage('Deploy & E2E-Prod') {
           agent {
             docker {
-              image 'node:18-bullseye'
+              image 'myplay-wright-image'
               args '-u root:root'
               reuseNode true
             }
@@ -158,7 +158,7 @@ pipeline {
             unstash 'node_modules'
             unstash 'build'
             sh '''
-              apt-get update && apt-get install -y git python3 make g++
+              apt-get update && apt-get install -y git python3 make g++ jr
               npm install -g netlify-cli@20.1.1
               echo "Deploying to Production Env with site ID: $NETLIFY_SITE_ID"
               netlify --version
