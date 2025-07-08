@@ -24,8 +24,7 @@ pipeline {
         passwordVariable: 'AWS_SECRET_ACCESS_KEY', 
         usernameVariable: 'AWS_ACCESS_KEY_ID')]) {
         sh '''
-        #aws --version >> \$LOG_FILE 2>&1
-        #aws s3 ls >> \$LOG_FILE 2>&1
+        aws --version >> \$LOG_FILE 2>&1
         aws ecs register-task-definition --cli-input-json file://aws/task-definition-prod.json
 
         ''' 
