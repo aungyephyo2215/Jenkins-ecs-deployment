@@ -24,7 +24,6 @@ pipeline {
             usernameVariable: 'AWS_ACCESS_KEY_ID'
           )
         ]) {
-          script {
             sh """
               echo '=== JQ ===' > \$LOG_FILE 2>&1
               yum install jq -y > \$LOG_FILE 2>&1
@@ -36,7 +35,6 @@ pipeline {
               echo '\\n=== Register ECS Services Deployment ===' >> \$LOG_FILE 2>&1
               aws ecs update-service --cluster Jenkins-lab-wordy-hippopotamus-pwnh7o --service Jenkins-learn-app-service-gc86u70w --task-definition Jenkins-learn-app:$LATEST_TD_REVISION >> \$LOG_FILE 2>&1
             """
-          }
         }
       }
 
