@@ -36,11 +36,9 @@ pipeline {
               LATEST_TD_REVISION=\$(aws ecs register-task-definition --cli-input-json file://aws/task-definition-prod.json | jq -r '.taskDefinition.revision')
               echo \$LATEST_TD_REVISION >> \$LOG_FILE 2>&1
               aws ecs create-service --cluster jenkins-app-lab --service-name jenkins-app-svr --task-definition sleep360:\$LATEST_TD_REVISION --desired-count 1
-
-              echo '\\n=== Register ECS Services Deployment ===' >> \$LOG_FILE 2>&1
-              #aws ecs update-service --jenkins-app-lab --service jenkins-app-svr --task-definition Jenkins-learn-app:\$LATEST_TD_REVISION >> \$LOG_FILE 2>&1
+              
             """
-      }
+            }
       }
 
       post {
