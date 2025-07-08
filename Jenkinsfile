@@ -13,6 +13,7 @@ pipeline {
       steps {
           sh '''
             docker build -t my-playwright-image .
+            reuseNode true
           '''
       }
     }
@@ -70,9 +71,11 @@ pipeline {
             unstash 'build'
             sh '''
               npm install serve
-              npx serve -s build &
+              npx serve -s build -l 5000 > /dev/null 2>&1 &
+              SERVER_PID=$!
               sleep 10
               npx playwright test --reporter=html
+              kill $SERVER_PID
             '''
           }
           post {
@@ -118,6 +121,16 @@ pipeline {
               echo "=== staging_url.txt ==="
               cat staging_url.txt
             '''
+            script {
+                def stagingUrl = readFile('staging_url.txt').trim()
+                if (!stagingUrl || stagingUrl == "null") {
+                  error "Staging URL could not be extracted! Check Netlify deploy output."
+                }
+                echo "Staging URL: ${stagingUrl}"
+                sh """
+                  npx playwright test --reporter=html --base-url=${stagingUrl}
+                """
+              }
    
           }
           post {
@@ -135,16 +148,7 @@ pipeline {
             }
           }
         }   
-
-        /*stage('Manual Approval') {
-          steps {
-            timeout(time: 15, unit: 'MINUTES') {
-              input message: 'Please confirm the deployment to production', ok: 'Confirm'
-            }
-          }
-        }*/
-        
-
+      
         stage('Deploy & E2E-Prod') {
           agent {
             docker {
@@ -167,6 +171,9 @@ pipeline {
               netlify status 
               netlify deploy --prod --dir=build --auth=$NETLIFY_AUTH_TOKEN --site=$NETLIFY_SITE_ID
             '''
+            sh """
+              npx playwright test --reporter=html --base-url=$CI_ENVIRONMENT_URL
+            """
 
           }
           post {
