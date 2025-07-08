@@ -36,10 +36,10 @@ pipeline {
         }
       }  
     }
-    post {
-      always {
-        cleanWs() // ✅ Clean entire workspace after the pipeline completes
-      }
-    }
+  post {
+    always {
+      cleanWs() // ✅ Clean entire workspace after the pipeline completes
+      } 
+    }  
   }
 }
