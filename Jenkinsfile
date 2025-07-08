@@ -11,16 +11,19 @@ pipeline {
         stage('Build') {
             agent {
                 docker {
-                    image 'node:18-alpine'
+                    image 'node:18-bullseye'
                     reuseNode true
                 }
             }
             steps {
-                deleteDir() // clean workspace
+                deleteDir()
                 sh '''
+                    set -e
                     npm install
                     npm run build
                 '''
+                stash name: 'build', includes: 'build/**'
+                stash name: 'node_modules', includes: 'node_modules/**'
             }
         }
 
@@ -29,11 +32,12 @@ pipeline {
                 stage('Unit tests') {
                     agent {
                         docker {
-                            image 'node:18-alpine'
+                            image 'node:18-bullseye'
                             reuseNode true
                         }
                     }
                     steps {
+                        unstash 'node_modules'
                         sh 'npm test || true'
                     }
                     post {
@@ -51,6 +55,8 @@ pipeline {
                         }
                     }
                     steps {
+                        unstash 'build'
+                        unstash 'node_modules'
                         sh '''
                             npm install serve
                             npx serve -s build &
@@ -88,16 +94,23 @@ pipeline {
                 CI_ENVIRONMENT_URL = ''
             }
             steps {
+                unstash 'build'
+                unstash 'node_modules'
                 sh '''
+                    set -e
                     npm install netlify-cli jq
                     netlify --version
                     echo "Deploying to staging. Site ID: $NETLIFY_SITE_ID"
                     netlify status
                     netlify deploy --dir=build --auth=$NETLIFY_AUTH_TOKEN --site=$NETLIFY_SITE_ID --json > deploy-output.json
-                    export CI_ENVIRONMENT_URL=$(jq -r '.deploy_ssl_url' deploy-output.json)
-                    echo "Staging URL: $CI_ENVIRONMENT_URL"
-                    npx playwright test --reporter=html --base-url=$CI_ENVIRONMENT_URL
+                    jq -r '.deploy_ssl_url' deploy-output.json > staging_url.txt
                 '''
+                script {
+                    def url = readFile('staging_url.txt').trim()
+                    env.CI_ENVIRONMENT_URL = url
+                    echo "Staging URL: ${url}"
+                }
+                sh 'npx playwright test --reporter=html --base-url=$CI_ENVIRONMENT_URL'
             }
             post {
                 always {
@@ -133,7 +146,10 @@ pipeline {
                 CI_ENVIRONMENT_URL = 'https://your-netlify-prod-url.netlify.app'
             }
             steps {
+                unstash 'build'
+                unstash 'node_modules'
                 sh '''
+                    set -e
                     npm install netlify-cli
                     netlify --version
                     echo "Deploying to production. Site ID: $NETLIFY_SITE_ID"
