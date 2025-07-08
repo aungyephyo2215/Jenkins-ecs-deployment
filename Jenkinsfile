@@ -28,9 +28,10 @@ pipeline {
             sh """
               echo '=== AWS CLI Version ===' > \$LOG_FILE 2>&1
               aws --version >> \$LOG_FILE 2>&1
-
               echo '\\n=== Register ECS Task Definition ===' >> \$LOG_FILE 2>&1
-              aws ecs register-task-definition --cli-input-json file://aws/task-definition-prod.json >> \$LOG_FILE 2>&1
+              #aws ecs register-task-definition --cli-input-json file://aws/task-definition-prod.json >> \$LOG_FILE 2>&1
+              aws ecs update-service --cluster Jenkins-lab-wordy-hippopotamus-pwnh7o --service Jenkins-learn-app-service-gc86u70w --task-definition my-task:3 \$LOG_FILE 2>&1
+
             """
           }
         }
