@@ -26,6 +26,7 @@ pipeline {
         sh '''
         aws --version >> \$LOG_FILE 2>&1
         aws s3 ls >> \$LOG_FILE 2>&1''' 
+
         }
       }
 
@@ -34,6 +35,11 @@ pipeline {
           archiveArtifacts artifacts: "${LOG_FILE}", fingerprint: true
         }
       }  
+    }
+    post {
+      always {
+        cleanWs() // ✅ Clean entire workspace after the pipeline completes
+      }
     }
   }
 }
