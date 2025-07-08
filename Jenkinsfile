@@ -16,10 +16,9 @@ pipeline {
                 }
             }
             steps {
+                deleteDir() // clean workspace
                 sh '''
-                    node --version
-                    npm --version
-                    npm ci
+                    npm install
                     npm run build
                 '''
             }
@@ -131,7 +130,7 @@ pipeline {
                 }
             }
             environment {
-                CI_ENVIRONMENT_URL = 'https://sunny-tartufo-84b220.netlify.app/'
+                CI_ENVIRONMENT_URL = 'https://your-netlify-prod-url.netlify.app'
             }
             steps {
                 sh '''
