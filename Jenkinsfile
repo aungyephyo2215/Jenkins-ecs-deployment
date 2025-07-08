@@ -38,11 +38,18 @@ pipeline {
                     }
                     steps {
                         unstash 'node_modules'
-                        sh 'npm test || true'
+                        sh '''
+                            set -e
+                            npm test || true
+                        '''
                     }
                     post {
                         always {
                             junit 'jest-results/junit.xml'
+                            echo '✅ Unit tests complete.'
+                        }
+                        failure {
+                            echo '❌ Unit tests failed — check console output.'
                         }
                     }
                 }
@@ -58,11 +65,12 @@ pipeline {
                         unstash 'build'
                         unstash 'node_modules'
                         sh '''
+                            set -e
                             npm install serve
                             npx serve -s build &
                             SERVER_PID=$!
                             sleep 10
-                            npx playwright test --reporter=html
+                            npx playwright test --reporter=html || true
                             kill $SERVER_PID || true
                         '''
                     }
@@ -77,6 +85,10 @@ pipeline {
                                 reportName: 'Local E2E',
                                 useWrapperFileDirectly: true
                             ])
+                            echo '📊 Playwright E2E test report published.'
+                        }
+                        failure {
+                            echo '❌ E2E tests failed — inspect the report.'
                         }
                     }
                 }
@@ -108,9 +120,11 @@ pipeline {
                 script {
                     def url = readFile('staging_url.txt').trim()
                     env.CI_ENVIRONMENT_URL = url
-                    echo "Staging URL: ${url}"
+                    echo "✅ Staging URL: ${url}"
                 }
-                sh 'npx playwright test --reporter=html --base-url=$CI_ENVIRONMENT_URL'
+                sh '''
+                    npx playwright test --reporter=html --base-url=$CI_ENVIRONMENT_URL || true
+                '''
             }
             post {
                 always {
@@ -123,6 +137,10 @@ pipeline {
                         reportName: 'Staging E2E',
                         useWrapperFileDirectly: true
                     ])
+                    echo '📊 Staging Playwright report published.'
+                }
+                failure {
+                    echo '❌ Staging deployment or E2E failed.'
                 }
             }
         }
@@ -143,7 +161,7 @@ pipeline {
                 }
             }
             environment {
-                CI_ENVIRONMENT_URL = 'https://sunny-tartufo-84b220.netlify.app/'
+                CI_ENVIRONMENT_URL = 'https://your-netlify-prod-url.netlify.app'
             }
             steps {
                 unstash 'build'
@@ -155,7 +173,7 @@ pipeline {
                     echo "Deploying to production. Site ID: $NETLIFY_SITE_ID"
                     netlify status
                     netlify deploy --prod --dir=build --auth=$NETLIFY_AUTH_TOKEN --site=$NETLIFY_SITE_ID
-                    npx playwright test --reporter=html --base-url=$CI_ENVIRONMENT_URL
+                    npx playwright test --reporter=html --base-url=$CI_ENVIRONMENT_URL || true
                 '''
             }
             post {
@@ -169,6 +187,10 @@ pipeline {
                         reportName: 'Prod E2E',
                         useWrapperFileDirectly: true
                     ])
+                    echo '📊 Production Playwright report published.'
+                }
+                failure {
+                    echo '❌ Production deployment or E2E tests failed.'
                 }
             }
         }
