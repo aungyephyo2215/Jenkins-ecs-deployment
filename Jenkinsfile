@@ -25,9 +25,9 @@ pipeline {
         usernameVariable: 'AWS_ACCESS_KEY_ID')]) {
         sh '''
         aws --version >> \$LOG_FILE 2>&1
-        aws s3 ls >> \$LOG_FILE 2>&1''' 
-        aws ecs regiter-task-definition --cli-input-json aws/task-definition-prod.json
-
+        aws s3 ls >> \$LOG_FILE 2>&1
+        aws ecs regiter-task-definition --cli-input-json aws/task-definition-prod.json >> \$LOG_FILE 2>&1
+        ''' 
         }
       }
 
