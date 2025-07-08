@@ -26,6 +26,7 @@ pipeline {
         ]) {
           script {
             sh """
+              echo '=== JQ ===' > \$LOG_FILE 2>&1
               yum install jq -y > \$LOG_FILE 2>&1
               echo '=== AWS CLI Version ===' > \$LOG_FILE 2>&1
               aws --version >> \$LOG_FILE 2>&1
