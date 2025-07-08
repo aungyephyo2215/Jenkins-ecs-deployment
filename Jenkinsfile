@@ -9,14 +9,14 @@ pipeline {
   }
 
   stages {
-    stage('Docker') {
+    /*stage('Docker') {
       steps {
           sh '''
             docker build -t my-playwright-image .
             reuseNode true
           '''
       }
-    }
+    }*/
     stage('Build') {
       agent {
         docker {
