@@ -38,6 +38,7 @@ pipeline {
               aws ecs update-service --cluster Jenkins-lab-wordy-hippopotamus-pwnh7o --service Jenkins-learn-app-service-gc86u70w --task-definition Jenkins-learn-app:\$LATEST_TD_REVISION >> \$LOG_FILE 2>&1
             """
       }
+      }
 
       post {
         always {
