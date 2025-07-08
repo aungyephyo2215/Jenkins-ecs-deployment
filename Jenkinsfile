@@ -19,7 +19,7 @@ pipeline {
             steps {
                 deleteDir()
                 sh '''
-                    set -e
+                  
                     npm install
                     npm run build
                 '''
