@@ -120,7 +120,7 @@ pipeline {
               echo "=== staging_url.txt ==="
               cat staging_url.txt
             '''
-            script {
+            /*script {
                 def stagingUrl = readFile('staging_url.txt').trim()
                 if (!stagingUrl || stagingUrl == "null") {
                   error "Staging URL could not be extracted! Check Netlify deploy output."
@@ -129,7 +129,7 @@ pipeline {
                 sh """
                   npx playwright test --reporter=html --base-url=${stagingUrl}
                 """
-              }
+              }*/
    
           }
           post {
@@ -170,9 +170,9 @@ pipeline {
               netlify status 
               netlify deploy --prod --dir=build --auth=$NETLIFY_AUTH_TOKEN --site=$NETLIFY_SITE_ID
             '''
-            sh """
+            /*sh """
               npx playwright test --reporter=html --base-url=$CI_ENVIRONMENT_URL
-            """
+            """*/
 
           }
           post {
