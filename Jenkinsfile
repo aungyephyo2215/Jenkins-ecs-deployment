@@ -26,7 +26,7 @@ pipeline {
         ]) {
           script {
             sh """
-              yum install jq -y
+              yum install jq -y > \$LOG_FILE 2>&1
               echo '=== AWS CLI Version ===' > \$LOG_FILE 2>&1
               aws --version >> \$LOG_FILE 2>&1
               echo '\\n=== Register ECS Task Definition ===' >> \$LOG_FILE 2>&1
