@@ -13,7 +13,8 @@ pipeline {
       agent {
         docker {
           image 'amazon/aws-cli'
-          args '-u root:root' // optional, if needed for write permissions
+          
+          args "--entrypoint=''"
           reuseNode true
         }
       }
