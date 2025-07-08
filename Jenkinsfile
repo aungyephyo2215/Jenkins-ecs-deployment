@@ -26,11 +26,8 @@ pipeline {
         ]) {
           script {
             sh """
-              echo '=== AWS CLI Version ===' > \$LOG_FILE 2>&1
-              aws --version >> \$LOG_FILE 2>&1
 
-              echo '\\n=== Register ECS Task Definition ===' >> \$LOG_FILE 2>&1
-              aws ecs register-task-definition --cli-input-json file://aws/task-definition-prod.json >> \$LOG_FILE 2>&1
+              aws ecs register-task-definition --cli-input-json file://aws/task-definition-prod.json
             """
           }
         }
