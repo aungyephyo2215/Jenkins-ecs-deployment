@@ -36,7 +36,7 @@ pipeline {
         stage('Unit tests') {
           agent {
             docker {
-              image 'node:18-alpine'
+              image 'my-playwright-image'
               reuseNode true
             }
           }
@@ -91,7 +91,7 @@ pipeline {
         stage('Deploy & E2E-Staging') {
           agent {
             docker {
-              image 'node:18-bullseye'
+              image 'my-playwright-image'
               args '-u root:root'
               reuseNode true
             }
@@ -134,9 +134,9 @@ pipeline {
                 alwaysLinkToLastBuild: false,
                 icon: '',
                 keepAll: false,
-                reportDir: 'playwright-report-staginge2e',
+                reportDir: 'playwright-report-Deploy & E2E-Staging',
                 reportFiles: 'index.html',
-                reportName: 'Playwright HTML Report (E2E-Staging)',
+                reportName: 'Playwright HTML Report (Deploy & E2E-Staging)',
                 useWrapperFileDirectly: true
               ])
             }
@@ -146,14 +146,12 @@ pipeline {
         stage('Deploy & E2E-Prod') {
           agent {
             docker {
-              image 'myplay-wright-image'
+              image 'my'
               args '-u root:root'
               reuseNode true
             }
           }
-          environment {
-            CI_ENVIRONMENT_URL = 'https://sunny-tartufo-84b220.netlify.app'
-          }
+
           steps {
             unstash 'node_modules'
             unstash 'build'
@@ -166,10 +164,8 @@ pipeline {
               netlify deploy --prod --dir=build --auth=$NETLIFY_AUTH_TOKEN --site=$NETLIFY_SITE_ID
               npx playwright test --reporter=html 
               echo $CI_ENVIRONMENT_URL
-            '''
-            /*sh """
               npx playwright test --reporter=html --base-url=$CI_ENVIRONMENT_URL
-            """*/
+            '''
 
           }
           post {
@@ -179,9 +175,9 @@ pipeline {
                 alwaysLinkToLastBuild: false,
                 icon: '',
                 keepAll: false,
-                reportDir: 'playwright-report',
+                reportDir: 'playwright-report-Deploy & E2E-Prod',
                 reportFiles: 'index.html',
-                reportName: 'Playwright HTML Report (E2E-Prod)',
+                reportName: 'Playwright HTML Report (Deploy & E2E-Prod)',
                 useWrapperFileDirectly: true
               ])
             }
