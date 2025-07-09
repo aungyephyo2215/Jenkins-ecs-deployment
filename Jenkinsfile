@@ -54,7 +54,7 @@ pipeline {
     stage('Register & Deploy ECS Task') {
       agent {
         docker {
-          image ''amazon/aws-cli''
+          image 'amazon/aws-cli'
           args '-u root --entrypoint=""'
           reuseNode true
         }
