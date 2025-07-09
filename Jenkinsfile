@@ -10,47 +10,15 @@ pipeline {
   }
 
   stages {
-
-    stage('Build App') {
-      agent {
-        docker {
-          image 'node:18-bullseye'
-          reuseNode true
-        }
-      }
-      steps {
-        deleteDir() // ✅ Clean workspace
-        sh '''
-          node --version
-          npm --version
-          npm ci
-          npm run build
-        '''
-        stash name: 'build', includes: 'build/**'
-        stash name: 'node_modules', includes: 'node_modules/**'
-      }
-    }
-
-    stage('Build Docker Image') {
-      agent {
-        label 'docker-host' // ✅ Run on Jenkins node with Docker
-      }
-      steps {
-        unstash 'build'
-        sh '''
-          docker build -t myjenkinsapp .
-        '''
-      }
-    }
-
     stage('Register & Deploy ECS Task') {
       agent {
         docker {
-          image 'node:18-bullseye' // ✅ More stable than amazonlinux
-          args '--user=root'
+          image 'amazonlinux'
+          args '-u root --entrypoint=""'
           reuseNode true
         }
       }
+
       steps {
         withCredentials([
           usernamePassword(
@@ -59,29 +27,35 @@ pipeline {
             passwordVariable: 'AWS_SECRET_ACCESS_KEY'
           )
         ]) {
-          sh '''
-            apt-get update && apt-get install -y jq awscli
-            aws --version
+          script {
+            sh """
+              set -e
+              echo '=== Installing Dependencies ===' > \$LOG_FILE
+              yum install -y jq aws-cli >> \$LOG_FILE 2>&1
 
-            echo "\n=== Register ECS Task Definition ===" > $LOG_FILE
-            REV=$(aws ecs register-task-definition \
-              --cli-input-json file://aws/task-definition-prod.json \
-              | jq -r '.taskDefinition.revision')
+              echo '=== AWS CLI Version ===' >> \$LOG_FILE
+              aws --version >> \$LOG_FILE 2>&1
 
-            echo "Revision: $REV" >> $LOG_FILE
+              echo '\\n=== Register ECS Task Definition ===' >> \$LOG_FILE
+              LATEST_TD_REVISION=\$(aws ecs register-task-definition \\
+                --cli-input-json file://aws/task-definition-prod.json | jq -r '.taskDefinition.revision')
 
-            echo "\n=== Update ECS Service ===" >> $LOG_FILE
-            aws ecs update-service \
-              --cluster $AWS_ECS_CLUSTER \
-              --service $AWS_ECS_SERVICE_PROD \
-              --task-definition $AWS_ECS_TD_PROD:$REV >> $LOG_FILE 2>&1
+              echo "Revision: \$LATEST_TD_REVISION" >> \$LOG_FILE
 
-            aws ecs wait services-stable \
-              --cluster $AWS_ECS_CLUSTER \
-              --services $AWS_ECS_SERVICE_PROD
-          '''
+              echo '\\n=== Update ECS Service to New Task Definition ===' >> \$LOG_FILE
+              aws ecs update-service \\
+                --cluster ${AWS_ECS_CLUSTER} \\
+                --service ${AWS_ECS_SERVICE_PROD} \\
+                --task-definition ${AWS_ECS_TD_PROD}:\$LATEST_TD_REVISION >> \$LOG_FILE 2>&1
+
+              aws ecs wait services-stable \\
+                --cluster ${AWS_ECS_CLUSTER} \\
+                --services ${AWS_ECS_SERVICE_PROD}
+            """
+          }
         }
       }
+
       post {
         always {
           archiveArtifacts artifacts: "${LOG_FILE}", fingerprint: true
