@@ -14,7 +14,8 @@ pipeline {
     stage('Build App') {
       agent {
         docker {
-          image 'node:18-bullseye'  // ✅ Debian-based Node
+          image 'node:18-bullseye'
+          args '--user=root'  // ✅ Debian-based Node
           reuseNode true
         }
       }
