@@ -11,39 +11,33 @@ pipeline {
 
   stages {
 
-    stage('Build') {
+    stage('Build App') {
       agent {
         docker {
-          image 'node:18-bullseye'  // ✅ Use Debian-based Node image
+          image 'node:18-bullseye'  // ✅ Debian-based Node
           reuseNode true
         }
       }
       steps {
-        deleteDir() // ✅ Clean workspace to avoid stale node_modules
-
+        deleteDir() // ✅ Clean workspace
         sh '''
+          node --version
+          npm --version
           npm ci
           npm run build
         '''
-
         stash name: 'build', includes: 'build/**'
         stash name: 'node_modules', includes: 'node_modules/**'
       }
     }
 
-    stage('Build Docker image') {
+    stage('Build Docker Image') {
       agent {
-        docker {
-          image 'amazonlinux:2'
-          reuseNode true
-          args '-u root -v /var/run/docker.sock:/var/run/docker.sock --entrypoint=""'
-        }
+        label 'docker-host' // ✅ Use Jenkins node with Docker installed
       }
       steps {
+        unstash 'build'
         sh '''
-          yum install -y docker
-          systemctl start docker || true
-          docker version
           docker build -t myjenkinsapp .
         '''
       }
@@ -53,7 +47,7 @@ pipeline {
       agent {
         docker {
           image 'amazonlinux:2'
-          args '-u root --entrypoint=""'
+          args '--user=root' // ✅ safer than entrypoint override
           reuseNode true
         }
       }
@@ -67,7 +61,8 @@ pipeline {
         ]) {
           sh """
             set -e
-            echo '=== Installing Dependencies ===' > \$LOG_FILE
+
+            echo '=== Installing CLI Tools ===' > \$LOG_FILE
             yum install -y jq aws-cli >> \$LOG_FILE 2>&1
 
             echo '=== AWS CLI Version ===' >> \$LOG_FILE
@@ -79,7 +74,7 @@ pipeline {
 
             echo "Revision: \$LATEST_TD_REVISION" >> \$LOG_FILE
 
-            echo '\\n=== Update ECS Service to New Task Definition ===' >> \$LOG_FILE
+            echo '\\n=== Update ECS Service ===' >> \$LOG_FILE
             aws ecs update-service \\
               --cluster ${AWS_ECS_CLUSTER} \\
               --service ${AWS_ECS_SERVICE_PROD} \\
@@ -91,7 +86,6 @@ pipeline {
           """
         }
       }
-
       post {
         always {
           archiveArtifacts artifacts: "${LOG_FILE}", fingerprint: true
@@ -102,7 +96,7 @@ pipeline {
 
   post {
     always {
-      cleanWs()
+      cleanWs() // ✅ Clean up after build
     }
   }
 }
