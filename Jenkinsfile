@@ -4,6 +4,10 @@ pipeline {
   environment {
     AWS_DEFAULT_REGION = 'ap-southeast-1'
     LOG_FILE = 's3list.txt'
+    AWS_ECS_CLUSTER = 'jenkin-learn-app-test-env'
+    AWS_ECS_SERVICE_PROD = 'learn-app-service'
+    AWS_ECS_TD_PROD =  'Jenkins-learn-app'
+
   }
 
   stages {
@@ -35,7 +39,8 @@ pipeline {
               echo \$LATEST_TD_REVISION >> \$LOG_FILE 2>&1
 
               echo '\\n=== Register ECS Services Deployment ===' >> \$LOG_FILE 2>&1
-              aws ecs update-service --cluster Jenkins-lab-wordy-hippopotamus-pwnh7o --service Jenkins-learn-app-service-gc86u70w --task-definition Jenkins-learn-app:\$LATEST_TD_REVISION >> \$LOG_FILE 2>&1
+              aws ecs update-service --cluster $AWS_ECS_CLUSTER --service Jenkins-$AWS_ECS_SERVICE_PROD --task-definition AWS_ECS_TD_PROD:\$LATEST_TD_REVISION >> \$LOG_FILE 2>&1
+              aws ecs wait services-stable --cluster $AWS_ECS_CLUSTER  --services $AWS_ECS_SERVICE_PROD
             """
       }
       }
