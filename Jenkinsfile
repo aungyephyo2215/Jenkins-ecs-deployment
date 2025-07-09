@@ -15,7 +15,6 @@ pipeline {
       agent {
         docker {
           image 'node:18-bullseye'
-          args '--user=root'  // ✅ Debian-based Node
           reuseNode true
         }
       }
@@ -34,7 +33,7 @@ pipeline {
 
     stage('Build Docker Image') {
       agent {
-        label 'docker-host' // ✅ Use Jenkins node with Docker installed
+        label 'docker-host' // ✅ Run on Jenkins node with Docker
       }
       steps {
         unstash 'build'
@@ -47,8 +46,8 @@ pipeline {
     stage('Register & Deploy ECS Task') {
       agent {
         docker {
-          image 'amazonlinux:2'
-          args '--user=root' // ✅ safer than entrypoint override
+          image 'node:18-bullseye' // ✅ More stable than amazonlinux
+          args '--user=root'
           reuseNode true
         }
       }
@@ -60,31 +59,27 @@ pipeline {
             passwordVariable: 'AWS_SECRET_ACCESS_KEY'
           )
         ]) {
-          sh """
-            set -e
+          sh '''
+            apt-get update && apt-get install -y jq awscli
+            aws --version
 
-            echo '=== Installing CLI Tools ===' > \$LOG_FILE
-            yum install -y jq aws-cli >> \$LOG_FILE 2>&1
+            echo "\n=== Register ECS Task Definition ===" > $LOG_FILE
+            REV=$(aws ecs register-task-definition \
+              --cli-input-json file://aws/task-definition-prod.json \
+              | jq -r '.taskDefinition.revision')
 
-            echo '=== AWS CLI Version ===' >> \$LOG_FILE
-            aws --version >> \$LOG_FILE 2>&1
+            echo "Revision: $REV" >> $LOG_FILE
 
-            echo '\\n=== Register ECS Task Definition ===' >> \$LOG_FILE
-            LATEST_TD_REVISION=\$(aws ecs register-task-definition \\
-              --cli-input-json file://aws/task-definition-prod.json | jq -r '.taskDefinition.revision')
+            echo "\n=== Update ECS Service ===" >> $LOG_FILE
+            aws ecs update-service \
+              --cluster $AWS_ECS_CLUSTER \
+              --service $AWS_ECS_SERVICE_PROD \
+              --task-definition $AWS_ECS_TD_PROD:$REV >> $LOG_FILE 2>&1
 
-            echo "Revision: \$LATEST_TD_REVISION" >> \$LOG_FILE
-
-            echo '\\n=== Update ECS Service ===' >> \$LOG_FILE
-            aws ecs update-service \\
-              --cluster ${AWS_ECS_CLUSTER} \\
-              --service ${AWS_ECS_SERVICE_PROD} \\
-              --task-definition ${AWS_ECS_TD_PROD}:\$LATEST_TD_REVISION >> \$LOG_FILE 2>&1
-
-            aws ecs wait services-stable \\
-              --cluster ${AWS_ECS_CLUSTER} \\
-              --services ${AWS_ECS_SERVICE_PROD}
-          """
+            aws ecs wait services-stable \
+              --cluster $AWS_ECS_CLUSTER \
+              --services $AWS_ECS_SERVICE_PROD
+          '''
         }
       }
       post {
@@ -97,7 +92,7 @@ pipeline {
 
   post {
     always {
-      cleanWs() // ✅ Clean up after build
+      cleanWs()
     }
   }
 }
