@@ -11,7 +11,7 @@ pipeline {
 
   stages {
 
-        stage('Build') {
+      stage('Build') {
         agent {
             docker {
                 image 'node:18-alpine'
@@ -19,14 +19,16 @@ pipeline {
             }
         }
         steps {
-            sh '''
-                ls -la
-                node --version
-                npm --version
-                npm ci
-                npm run build
-                ls -la
-            '''
+          ls -la
+          node --version
+          npm --version
+          npm ci
+          npm run build
+          ls -la
+        '''
+        stash name: 'build', includes: 'build/**'
+        stash name: 'node_modules', includes: 'node_modules/**'
+        '''
         }
     }
 
