@@ -19,22 +19,24 @@ pipeline {
             }
         }
         steps {
+          sh '''
           ls -la
           npm --version
           npm ci
           npm run build
           ls -la
-        '''
+          '''
+       
         stash name: 'build', includes: 'build/**'
         stash name: 'node_modules', includes: 'node_modules/**'
-        '''
+        
         }
     }
 
     stage('Build Docker image') {
         agent {
             docker {
-                image 'amazon/aws-cli'
+                image 'amazonlinux:2'
                 reuseNode true
                 args "-u root -v /var/run/docker.sock:/var/run/docker.sock --entrypoint=''"
             }
