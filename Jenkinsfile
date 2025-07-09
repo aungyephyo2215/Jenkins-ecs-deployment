@@ -14,18 +14,18 @@ pipeline {
     stage('Build') {
       agent {
         docker {
-          image 'node:18-alpine'
+          image 'node:18-bullseye'  // ✅ Use Debian-based Node image
           reuseNode true
         }
       }
       steps {
+        deleteDir() // ✅ Clean workspace to avoid stale node_modules
+
         sh '''
-          ls -la
-          npm --version
           npm ci
           npm run build
-          ls -la
         '''
+
         stash name: 'build', includes: 'build/**'
         stash name: 'node_modules', includes: 'node_modules/**'
       }
@@ -67,7 +67,6 @@ pipeline {
         ]) {
           sh """
             set -e
-
             echo '=== Installing Dependencies ===' > \$LOG_FILE
             yum install -y jq aws-cli >> \$LOG_FILE 2>&1
 
@@ -92,6 +91,7 @@ pipeline {
           """
         }
       }
+
       post {
         always {
           archiveArtifacts artifacts: "${LOG_FILE}", fingerprint: true
