@@ -6,7 +6,7 @@
     "containerDefinitions": [
         {
             "name": "jenkins-learnapp",
-            "image": "nginx:mainline-alpine3.22-perl",
+            "image": "nginx:alpine3.22",
             "portMappings": [{
                 "name": "nginx-app",
                 "containerPort": 80,
